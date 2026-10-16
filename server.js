@@ -56,4 +56,5 @@ app.get('/api/predictions/:id',auth,async(req,res)=>{const job=db.jobs[req.param
  if(['failed','canceled'].includes(d.status)&&!job.done){req.user.credits+=1;job.done=true;save()}
  if(d.status==='succeeded'&&!job.done){job.done=true;save()}
  res.json({status:d.status,video,error:d.error||null,credits:req.user.credits})}catch{jsonError(res,'Could not check video status.',502)}});
+app.use(express.static('public'));
 const port=Number(process.env.PORT)||3000;app.listen(port,()=>console.log('NOVA listening on '+port));
