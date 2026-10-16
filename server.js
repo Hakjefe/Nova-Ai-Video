@@ -34,7 +34,7 @@ app.post('/api/stripe/webhook',express.raw({type:'application/json'}),async(req,
   db.events[event.id]=true;save();res.json({received:true});
  }catch{res.status(500).send('Webhook error')}
 });
-app.use(express.json({limit:'30kb'}));app.use(express.static('public'));
+app.use(express.json({limit:'30kb'}));app.use(express.static('Public'));
 app.post('/api/signup',(req,res)=>{let {email,password}=req.body||{};email=String(email||'').trim().toLowerCase();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)||email.length>160)return jsonError(res,'Enter a valid email.');if(typeof password!=='string'||password.length<10||password.length>128)return jsonError(res,'Password must be at least 10 characters.');if(db.users[email])return jsonError(res,'Account already exists. Sign in instead.');const salt=randomBytes(16).toString('hex');db.users[email]={email,salt,passwordHash:hash(password,salt),credits:0,active:false};save();setSession(res,email);res.json({user:safe(db.users[email])})});
 app.post('/api/login',(req,res)=>{const email=String(req.body?.email||'').trim().toLowerCase();const pw=req.body?.password;const u=db.users[email];if(!u||typeof pw!=='string')return jsonError(res,'Incorrect email or password.',401);const attempt=Buffer.from(hash(pw,u.salt),'hex');if(!timingSafeEqual(attempt,Buffer.from(u.passwordHash,'hex')))return jsonError(res,'Incorrect email or password.',401);setSession(res,email);res.json({user:safe(u)})});
 app.post('/api/logout',(req,res)=>{delete db.sessions[cookie(req)];save();res.clearCookie('nova_session',{path:'/'});res.json({ok:true})});
